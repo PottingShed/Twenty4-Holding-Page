@@ -483,7 +483,7 @@
         var op = clamp(-ob.top / (ob.height - vh), 0, 1);
         var enter = clamp((vh - ob.top) / vh, 0, 1);
         ss.setProperty('--ss', (1.1 - ease(clamp(op / 0.95, 0, 1)) * 0.07 + (1 - enter) * 0.03).toFixed(4)); // never below 1.03
-        ss.setProperty('--sx', (-ease(op) * 1.0).toFixed(3) + '%');                                          // so the drift never shows an edge
+        ss.setProperty('--sx', (ease(op) * 0.8).toFixed(3) + '%');   // drifts right: the zoom is anchored right of centre, so both edges stay covered
         ss.setProperty('--st', ease(clamp((enter - 0.55) / 0.4 + op * 2, 0, 1)).toFixed(3));
         ss.setProperty('--se', ease(clamp((op - 0.82) / 0.18, 0, 1)).toFixed(3));
         soLines.forEach(function (sp, i) {
