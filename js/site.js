@@ -210,7 +210,8 @@
      slowed for weight, and looped on a hard cut like the edit itself. */
   var RATE = 0.8, XF = 0.8, front = 0, filmOn = false;
   if (vids.length) {
-    var src = (innerWidth * (devicePixelRatio || 1) > 1500) ? 'assets/video/film-1080.mp4' : 'assets/video/film-720.mp4';
+    var portraitFilm = innerWidth / innerHeight < 0.9;   // phones crop into the frame, so they need the sharper file
+    var src = (portraitFilm || innerWidth * (devicePixelRatio || 1) > 1500) ? 'assets/video/film-1080.mp4' : 'assets/video/film-720.mp4';
     // Fetch the film only once the visitor is on their way to it — never on page load
     var armed = false;
     var vio = new IntersectionObserver(function (es) {
@@ -435,15 +436,18 @@
         var o1 = inOut(clamp(sp / 0.22, 0, 1));                    // slit → letterbox, easing out of the hold
         var o2 = ease(clamp((sp - 0.3) / 0.2, 0, 1));             // letterbox → full bleed
         var s0 = slitTop();
-        var fy = lerp(lerp(s0, lb, o1), 0, o2), fyb = lerp(lerp(100 - s0, lb, o1), 0, o2);
+        // Phones: the film settles into a framed 4:5 picture inside the margins, rather than a soft full-bleed crop
+        var portrait = W / vh < 0.9, gutP = portrait ? leadGut() : 0;
+        var fyEnd = portrait ? Math.max(0, (vh - (W - 2 * gutP) * 1.25) / 2) / vh * 100 : 0;
+        var fy = lerp(lerp(s0, lb, o1), fyEnd, o2), fyb = lerp(lerp(100 - s0, lb, o1), fyEnd, o2);
         // The slit starts exactly at the text column's edges, so it marks the site width
         var lw = $('.film-lead'); var gut = lw ? (lw.getBoundingClientRect().left + parseFloat(getComputedStyle(lw).paddingLeft)) : W * 0.1;
-        var fx = lerp(lerp(gut, W * 0.025, o1), 0, o2);
+        var fx = lerp(lerp(gut, portrait ? gut : W * 0.025, o1), portrait ? gut : 0, o2);
         var cam = ease(clamp(sp / 0.62, 0, 1));
         var s = fstick.style;
         s.setProperty('--fy', fy.toFixed(3) + '%'); s.setProperty('--fyb', fyb.toFixed(3) + '%');
         s.setProperty('--fx', fx.toFixed(1) + 'px');
-        s.setProperty('--fr', ((1 - o2) * 4).toFixed(2) + 'px');
+        s.setProperty('--fr', (portrait ? lerp(4, 12, o2) : (1 - o2) * 4).toFixed(2) + 'px');
         s.setProperty('--fs', (lerp(1.55, 1.1, cam) - sp * 0.05).toFixed(4));
         s.setProperty('--fz', lerp(-3.5, 0, cam).toFixed(3) + 'deg');
         s.setProperty('--ftx', lerp(-2.5, 2.5, sp).toFixed(3) + '%');
