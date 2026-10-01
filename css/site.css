@@ -290,9 +290,9 @@ em { font-style: normal; color: var(--blue); }
   background-image: var(--grain);
   animation: grain 1.2s steps(5) infinite; }
 .so-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 55%; transform: scale(var(--ss, 1.1)) translate3d(var(--sx, 0), 0, 0); transform-origin: 72% 65%; will-change: transform; }
-.so-seq { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 55%; transform: scale(var(--ss, 1.1)) translate3d(var(--sx, 0), 0, 0); transform-origin: 72% 65%; opacity: 0; transition: opacity 0.8s var(--ease); will-change: transform; }
-.so-seq.ready { opacity: 1; }
-.so-seq.portrait { object-position: 50% 50%; } /* phones get a portrait crop already framed on the 4+ */
+.so-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 55%; transform: scale(var(--ss, 1.1)) translate3d(var(--sx, 0), 0, 0); transform-origin: 72% 65%; opacity: 0; transition: opacity 0.8s var(--ease); will-change: transform; }
+.so-vid { transition: opacity 0.7s var(--ease); }
+.so-vid.on { opacity: 1; }
 .so-frame { position: absolute; inset: 0; overflow: hidden; opacity: var(--sv, 1); }
 .so-shade { position: absolute; inset: 0; pointer-events: none;
   background:
@@ -433,7 +433,7 @@ em { font-style: normal; color: var(--blue); }
   .js .site-footer.over-film .wrap::before { scale: 1 1; }
   .so-stick { position: relative; min-height: 100vh; }
   .so-img { transform: none; }
-  .so-seq { display: none; }
+  .so-vid { display: none; }
   .film-scene { height: auto; margin-top: 0; }
   .hero { height: auto; }
   .hero-stick { position: relative; min-height: 100vh; }
@@ -452,7 +452,7 @@ em { font-style: normal; color: var(--blue); }
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .signoff { height: 260vh; }
-  .so-img { object-position: 78% 60%; }
+  .so-img, .so-vid { object-position: 70% 60%; }
   .so-shade { background: linear-gradient(180deg, rgba(5, 11, 31, 1) 0%, rgba(5, 11, 31, 0.55) 25%, rgba(5, 11, 31, 0.55) 70%, rgba(5, 11, 31, 1) 100%); }
   .ed-title { grid-column: 1 / -1; grid-row: auto; margin-bottom: 40px; }
   .ed-1 { grid-column: 1 / span 11; grid-row: auto; }

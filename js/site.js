@@ -263,32 +263,34 @@
     });
   }
   keylineWidths(); addEventListener('resize', keylineWidths); addEventListener('load', keylineWidths);
-  /* Sign-off: the 4+ render as an image sequence drawn to a canvas. Any frame shows instantly
-     (no video seeking), neighbouring frames are blended, and the position glides after the scroll. */
-  var soCv = $('.so-seq'), soCtx = soCv && soCv.getContext('2d'), SEQ_N = 96, seq = [], seqPos = 0, seqDrawn = -1;
-  var seqSet = innerWidth / innerHeight < 0.9 ? 'm' : 'd';     // portrait crops for phones
-  function seqUrl(i) { return 'assets/seq/' + seqSet + '/' + (i < 10 ? '0' : '') + i + '.webp'; }
-  function nearestLoaded(i) { for (var d = 0; d < SEQ_N; d++) { if (seq[i - d]) return i - d; if (seq[i + d]) return i + d; } return -1; }
-  function drawSeq(pos) {
-    var i = Math.floor(pos), f = pos - i, a = nearestLoaded(i);
-    if (a < 0) return;
-    var A = seq[a], B = seq[Math.min(SEQ_N - 1, a + 1)];
-    if (soCv.width !== A.naturalWidth) { soCv.width = A.naturalWidth; soCv.height = A.naturalHeight; }
-    soCtx.globalAlpha = 1; soCtx.drawImage(A, 0, 0);
-    if (B && a === i && f > 0.01) { soCtx.globalAlpha = f; soCtx.drawImage(B, 0, 0); }
-    soCv.classList.add('ready');
-  }
-  if (soCv) {
-    if (seqSet === 'm') soCv.classList.add('portrait');
-    var seqStarted = false;
-    function loadSeq() { // coarse to fine, so every position has a nearby frame early
-      if (seqStarted) return; seqStarted = true;
-      var order = [], seen = {};
-      [48, 24, 12, 6, 3, 1].forEach(function (step) { for (var i = 0; i < SEQ_N; i += step) if (!seen[i]) { seen[i] = 1; order.push(i); } });
-      order.forEach(function (i) { var im = new Image(); im.decoding = 'async'; im.src = seqUrl(i); (im.decode ? im.decode() : Promise.resolve()).then(function () { seq[i] = im; seqDrawn = -1; }).catch(function () {}); });
+  /* Sign-off: the 4+ rises once as the section arrives, then hands over to a seamless idle loop
+     (the mark floating, fine rings drifting out). Time-based, never tied to the scroll. */
+  var soRise = $('.so-rise'), soLoop = $('.so-loop');
+  if (soRise && soLoop) {
+    var big = innerWidth * (devicePixelRatio || 1) >= 1000;
+    var started = false;
+    function soLoad() {
+      if (soRise.src) return;
+      soRise.src = 'assets/video/rise-' + (big ? '1600' : '960') + '.mp4';
+      soLoop.src = 'assets/video/float-' + (big ? '1600' : '960') + '.mp4';
+      soRise.preload = soLoop.preload = 'auto'; soLoop.loop = true;
     }
-    var sio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { loadSeq(); sio.disconnect(); } }, { rootMargin: '0px 0px 120% 0px' });
-    addEventListener('scroll', function arm2() { sio.observe(so); removeEventListener('scroll', arm2); }, { passive: true });
+    function toLoop() { // cross-fade into the loop just before the rise ends
+      if (soLoop.classList.contains('on')) return;
+      soLoop.currentTime = 0; soLoop.play().catch(function () {});
+      soLoop.classList.add('on'); setTimeout(function () { soRise.classList.remove('on'); }, 700);
+    }
+    soRise.addEventListener('timeupdate', function () { if (soRise.duration && soRise.currentTime > soRise.duration - 0.5) toLoop(); });
+    soRise.addEventListener('ended', toLoop);
+    var lio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { soLoad(); lio.disconnect(); } }, { rootMargin: '0px 0px 120% 0px' });
+    var pio = new IntersectionObserver(function (es) {   // play when it's properly in view; pause off screen
+      var e = es[0];
+      if (e.isIntersecting) {
+        if (!started) { started = true; soRise.classList.add('on'); soRise.play().catch(function () { toLoop(); }); }
+        else if (soLoop.classList.contains('on')) soLoop.play().catch(function () {});
+      } else { soLoop.pause(); }
+    }, { threshold: 0.35 });
+    addEventListener('scroll', function arm2() { lio.observe(so); pio.observe(soStick); removeEventListener('scroll', arm2); }, { passive: true });
   }
   var marks = $$('.ed-mark');
   var deboss = $('.deboss'), contact = $('.contact');
@@ -479,12 +481,6 @@
         ss.setProperty('--sx', (-ease(op) * 1.5).toFixed(3) + '%');
         ss.setProperty('--st', ease(clamp((enter - 0.55) / 0.4 + op * 2, 0, 1)).toFixed(3));
         ss.setProperty('--se', ease(clamp((op - 0.82) / 0.18, 0, 1)).toFixed(3));
-        if (soCv) {
-          var want = inOut(clamp((op + (1 - enter) * -0.4) / 0.62, 0, 1)) * (SEQ_N - 1);
-          seqPos += (want - seqPos) * 0.12;                      // glides after the scroll, never jerks
-          if (Math.abs(want - seqPos) < 0.002) seqPos = want;
-          if (Math.abs(seqPos - seqDrawn) > 0.004) { drawSeq(seqPos); seqDrawn = seqPos; }
-        }
         soLines.forEach(function (sp, i) {
           var k = ease(clamp((op - 0.12 - i * 0.16) / 0.16, 0, 1));
           sp.style.transform = 'translate3d(0,' + ((1 - k) * 106).toFixed(2) + '%,0)';
