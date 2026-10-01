@@ -304,7 +304,7 @@ em { font-style: normal; color: var(--blue); }
     /* the render emerges from the top-left corner: a sweeping falloff, clearly diagonal */
     radial-gradient(135% 120% at 0% 0%, rgb(5 11 31) 0%, rgb(5 11 31 / 0.95) 18%, rgb(5 11 31 / 0.8) 30%, rgb(5 11 31 / 0.55) 42%, rgb(5 11 31 / 0.28) 54%, rgb(5 11 31 / 0.09) 66%, rgb(5 11 31 / 0) 76%),
     /* only a sliver at the top edge, so it meets the section above without a band */
-    linear-gradient(180deg, rgb(5 11 31) 0%, rgb(5 11 31 / 0.45) 3%, rgb(5 11 31 / 0) 8%, rgb(5 11 31 / 0) 74%, rgb(5 11 31 / calc(0.6 + var(--se, 0) * 0.4)) 100%),
+    linear-gradient(180deg, rgb(5 11 31) 0%, rgb(5 11 31 / 0.45) 3%, rgb(5 11 31 / 0) 8%), /* the bottom stays a crisp edge: structure against the footer */
     linear-gradient(90deg, rgb(5 11 31 / 0.5) 0%, rgb(5 11 31 / 0.18) 38%, rgb(5 11 31 / 0) 62%); }
 .so-copy { position: relative; z-index: 1; }
 .so-title { position: relative; max-width: 26em; margin-bottom: clamp(36px, 5vw, 72px); padding-top: 22px; font-family: var(--font-head); font-weight: 400; font-size: var(--t-caption); line-height: 1.45; letter-spacing: -0.005em; color: var(--ink-2); opacity: var(--st, 1); transform: translate3d(0, calc((1 - var(--st, 1)) * 30px), 0); }
@@ -462,7 +462,7 @@ em { font-style: normal; color: var(--blue); }
 @media (max-width: 900px) {
   .signoff { height: 260vh; }
   .so-img, .so-vid { object-position: 70% 60%; }
-  .so-shade { background: radial-gradient(150% 85% at 0% 0%, rgb(5 11 31) 0%, rgb(5 11 31 / 0.85) 28%, rgb(5 11 31 / 0.45) 52%, rgb(5 11 31 / 0.15) 72%, rgb(5 11 31 / 0) 86%), linear-gradient(180deg, rgb(5 11 31 / 0) 70%, rgb(5 11 31) 100%); }
+  .so-shade { background: radial-gradient(150% 85% at 0% 0%, rgb(5 11 31) 0%, rgb(5 11 31 / 0.85) 28%, rgb(5 11 31 / 0.45) 52%, rgb(5 11 31 / 0.15) 72%, rgb(5 11 31 / 0) 86%); }
   .ed-title { grid-column: 1 / -1; grid-row: auto; margin-bottom: 40px; }
   .ed-1 { grid-column: 1 / span 11; grid-row: auto; }
   .ed-2 { grid-column: 4 / -1; grid-row: auto; margin-top: 88px; }
