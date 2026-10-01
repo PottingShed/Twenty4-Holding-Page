@@ -291,10 +291,13 @@ em { font-style: normal; color: var(--blue); }
   animation: grain 1.2s steps(5) infinite; }
 .so-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 55%; transform: scale(var(--ss, 1.1)) translate3d(var(--sx, 0), 0, 0); transform-origin: 72% 65%; will-change: transform; }
 .so-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 55%; transform: scale(var(--ss, 1.1)) translate3d(var(--sx, 0), 0, 0); transform-origin: 72% 65%; opacity: 0; transition: opacity 0.8s var(--ease); will-change: transform; }
-.so-vid { transition: opacity 0.7s var(--ease); }
+.so-rise { transition: none; }
+.so-loop { transition: opacity 0.9s cubic-bezier(0.45, 0, 0.25, 1); }
 .so-vid.on { opacity: 1; }
 .so-frame { position: absolute; inset: 0; overflow: hidden; }
-.js .so-frame { opacity: 0; transition: opacity 1.6s var(--ease); }
+.js .so-frame { opacity: 0; transition: opacity 3.4s cubic-bezier(0.37, 0, 0.3, 1) 0.8s; } /* waits past the moment the 4+ breaks the surface (0.93s), then a slow, even reveal */
+.js .so-img { opacity: 0; } /* the end-frame still is only a fallback; never seen ahead of the rise */
+.js .so-stick.novideo .so-img { opacity: 1; }
 .js .so-stick.risen .so-frame { opacity: 1; }
 .so-shade { position: absolute; inset: 0; pointer-events: none;
   background:
@@ -439,7 +442,7 @@ em { font-style: normal; color: var(--blue); }
   .so-stick { position: relative; min-height: 100vh; }
   .so-img { transform: none; }
   .so-vid { display: none; }
-  .js .so-frame { opacity: 1; }
+  .js .so-frame, .js .so-img { opacity: 1; }
   .film-scene { height: auto; margin-top: 0; }
   .hero { height: auto; }
   .hero-stick { position: relative; min-height: 100vh; }

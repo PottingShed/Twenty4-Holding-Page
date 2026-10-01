@@ -282,6 +282,7 @@
     }
     soRise.addEventListener('timeupdate', function () { if (soRise.duration && soRise.currentTime > soRise.duration - 0.5) toLoop(); });
     soRise.addEventListener('ended', toLoop);
+    [soRise, soLoop].forEach(function (v) { v.addEventListener('error', function () { soStick.classList.add('novideo', 'risen'); }); }); // fall back to the still
     var lio = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { soLoad(); lio.disconnect(); } }, { rootMargin: '0px 0px 120% 0px' });
     var pio = new IntersectionObserver(function (es) {   // play when it's properly in view; pause off screen
       var e = es[0];
@@ -294,7 +295,7 @@
         }
         else if (soLoop.classList.contains('on')) soLoop.play().catch(function () {});
       } else { soLoop.pause(); }
-    }, { threshold: 0.35 });
+    }, { threshold: 0.5 });
     addEventListener('scroll', function arm2() { lio.observe(so); pio.observe(soStick); removeEventListener('scroll', arm2); }, { passive: true });
   }
   var marks = $$('.ed-mark');
