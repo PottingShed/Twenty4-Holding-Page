@@ -286,7 +286,12 @@
     var pio = new IntersectionObserver(function (es) {   // play when it's properly in view; pause off screen
       var e = es[0];
       if (e.isIntersecting) {
-        if (!started) { started = true; soRise.classList.add('on'); soRise.play().catch(function () { toLoop(); }); }
+        if (!started) {
+          started = true; soLoad(); soRise.classList.add('on'); soStick.classList.add('risen'); // the frame rises out of the navy as the 4+ rises
+          soRise.play().catch(function () {            // not ready yet: play as soon as it can, rather than skip the rise
+            soRise.addEventListener('canplay', function () { soRise.play().catch(toLoop); }, { once: true });
+          });
+        }
         else if (soLoop.classList.contains('on')) soLoop.play().catch(function () {});
       } else { soLoop.pause(); }
     }, { threshold: 0.35 });
@@ -476,7 +481,6 @@
         var ss = soStick.style;
         var op = clamp(-ob.top / (ob.height - vh), 0, 1);
         var enter = clamp((vh - ob.top) / vh, 0, 1);
-        ss.setProperty('--sv', inOut(clamp((op - 0.02) / 0.3, 0, 1)).toFixed(3)); // the render rises out of the navy
         ss.setProperty('--ss', (1.1 - ease(clamp(op / 0.95, 0, 1)) * 0.1 + (1 - enter) * 0.03).toFixed(4));
         ss.setProperty('--sx', (-ease(op) * 1.5).toFixed(3) + '%');
         ss.setProperty('--st', ease(clamp((enter - 0.55) / 0.4 + op * 2, 0, 1)).toFixed(3));
