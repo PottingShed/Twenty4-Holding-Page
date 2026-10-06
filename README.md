@@ -7,14 +7,17 @@ index.html                 Holding page
 policies/index.html        Policies index (generated)
 policies/<slug>/index.html Individual policies (generated)
 cookies/index.html         Cookies Policy (generated)
+404.html                   Page not found (generated; root-absolute links, so it only styles correctly on the live domain)
+sitemap.xml                Sitemap (generated)
+robots.txt                 Allows all crawlers and points to the sitemap
 content/*.html             Policy wording, pulled verbatim from fort.group/policies
 css/site.css               All styles
 js/site.js                 Guernsey-time dial, one-shot reveals, pointer light on the 4+
 assets/                    Logo, favicon, fonts, Standard Terms PDF
-build.py                   Regenerates the policy pages from content/
+build.py                   Regenerates the policy pages, 404 and sitemap from content/
 ```
 
-To edit a policy, change the file in `content/`, then run `python3 build.py`.
+To edit a policy, change the file in `content/`, then run `python3 build.py`. Each policy's meta description lives next to its title in `build.py`. Canonical URLs and the sitemap use `SITE` in `build.py` (`https://www.twenty4.group/`); the Organization JSON-LD in `index.html` uses the same domain.
 
 To preview locally, run `npx http-server -p 8424`.
 
@@ -23,7 +26,7 @@ To preview locally, run `npx http-server -p 8424`.
 - [ ] **Cookies Policy wording.** Fort has no existing cookies policy, so this is new draft copy and needs client sign-off. Remove the "Draft" line in `content/cookies.html`.
 - [ ] **Footer legal line.** Confirm the entity name and registration details after the rebrand.
 - [ ] **Policy wording still says "Fort".** For example, hello@fort.group appears in the privacy notice. It was kept verbatim as agreed.
-- [ ] **og:image.** Create a 1200×630 share image and add `og:image` / `twitter:image`.
+- [x] **og:image.** `assets/og-image.jpg` (1200×630, cropped from the sign-off still) is set on every page.
 - [ ] **Redirects.** Add 301s from the old fort.group URLs to `/` and to the matching `/policies/*` pages.
 
 ## Imagery and film

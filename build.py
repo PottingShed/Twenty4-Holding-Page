@@ -1,37 +1,53 @@
 #!/usr/bin/env python3
-"""Builds the policy pages from content/*.html fragments.
+"""Builds the policy pages, 404 page and sitemap from content/*.html fragments.
 
 Edit wording in content/, then run:  python3 build.py
 """
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+SITE = "https://www.twenty4.group/"  # live domain, used for canonical URLs and the sitemap
 
 POLICIES = [
-    # slug, title, source fragment (None = external document)
-    ("complaints", "Complaints", "complaints.html"),
-    ("privacy-notice", "Privacy Notice", "privacy-notice.html"),
-    ("regulatory", "Regulatory &amp; Disclaimer", "regulatory.html"),
-    ("terms-and-conditions", "Website Terms &amp; Conditions", "terms-and-conditions.html"),
+    # slug, title, source fragment, meta description
+    ("complaints", "Complaints", "complaints.html",
+     "How to make a complaint to Twenty4, how we investigate it, when you can expect a response and how to contact the Guernsey Financial Services Commission."),
+    ("privacy-notice", "Privacy Notice", "privacy-notice.html",
+     "How Twenty4 collects, uses and protects your personal data, who we share it with, how long we keep it and your rights under Guernsey data protection law."),
+    ("regulatory", "Regulatory &amp; Disclaimer", "regulatory.html",
+     "Regulatory information for Twenty4: our companies, their Guernsey registration numbers and GFSC licences, plus our website disclaimer and copyright notice."),
+    ("terms-and-conditions", "Website Terms &amp; Conditions", "terms-and-conditions.html",
+     "The terms of use for the Twenty4 website, including our disclaimer, copyright notice and how you may use the content on this site."),
 ]
 PDF = ("Standard Terms and Conditions", "assets/docs/standard-terms-and-conditions.pdf")
-COOKIES = ("cookies", "Cookies Policy", "cookies.html")
+COOKIES = ("cookies", "Cookies Policy", "cookies.html",
+           "How the Twenty4 website uses cookies, which strictly necessary cookies our host may set, and how to manage or block cookies in your browser.")
+POLICIES_DESCRIPTION = ("Twenty4 policies, including our complaints procedure, privacy notice, regulatory information, "
+                        "website terms, cookies policy and standard terms of business.")
 
 
-
-def page(title, rel, crumbs, body, description):
+def page(title, rel, crumbs, body, description, path=None):
+    """path: the page's URL path from the site root, for its canonical link (None = no canonical)."""
     crumb_html = "".join(
         f'<li><a href="{href}">{label}</a></li>' if href else f'<li aria-current="page">{label}</li>'
         for label, href in crumbs
     )
     plain = title.replace("&amp;", "&")
+    canonical = f'\n  <link rel="canonical" href="{SITE}{path}">' if path is not None else ""
     return f"""<!doctype html>
 <html lang="en-GB">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{plain} | Twenty4</title>
-  <meta name="description" content="{description}">
+  <meta name="description" content="{description}">{canonical}
+  <meta property="og:site_name" content="Twenty4">
+  <meta property="og:title" content="{plain} | Twenty4">
+  <meta property="og:description" content="{description}">
+  <meta property="og:image" content="{SITE}assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#050b1f">
   <link rel="icon" href="{rel}assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="{rel}assets/favicon-32.png" sizes="32x32" type="image/png">
@@ -81,7 +97,7 @@ def page(title, rel, crumbs, body, description):
 
 
 def sidebar(rel, current):
-    items = [(s, t, f"{rel}policies/{s}/") for s, t, _ in POLICIES]
+    items = [(s, t, f"{rel}policies/{s}/") for s, t, _, _ in POLICIES]
     items.append((COOKIES[0], COOKIES[1], f"{rel}cookies/"))
     cur = ' aria-current="page"'
     links = "".join(
@@ -106,7 +122,7 @@ def write(path, html):
 
 # Policies index
 rows = []
-entries = [(t, f"{s}/", "") for s, t, _ in POLICIES]
+entries = [(t, f"{s}/", "") for s, t, _, _ in POLICIES]
 entries.append((COOKIES[1], "../cookies/", ""))
 entries.append((PDF[0], f"../{PDF[1]}", "PDF, 165 KB"))
 for t, href, meta in entries:
@@ -117,21 +133,43 @@ write("policies/index.html", page(
     "Policies", "../",
     [("Home", "../"), ("Policies", None)],
     f'        <ul class="policy-list">{"".join(rows)}</ul>',
-    "Twenty4 policies: complaints, privacy notice, regulatory information and terms and conditions.",
+    POLICIES_DESCRIPTION,
+    "policies/",
 ))
 
-for slug, title, fragment in POLICIES:
+for slug, title, fragment, description in POLICIES:
     write(f"policies/{slug}/index.html", page(
         title, "../../",
         [("Home", "../../"), ("Policies", "../"), (title, None)],
         article("../../", slug, fragment),
-        f"Twenty4 {title.replace('&amp;', 'and')}.",
+        description,
+        f"policies/{slug}/",
     ))
 
-slug, title, fragment = COOKIES
+slug, title, fragment, description = COOKIES
 write("cookies/index.html", page(
     title, "../",
     [("Home", "../"), (title, None)],
     article("../", slug, fragment),
-    "How the Twenty4 website uses cookies.",
+    description,
+    "cookies/",
 ))
+
+# 404: served at whatever URL was missed, so its links are root-absolute
+write("404.html", page(
+    "Page not found", "/",
+    [("Home", "/"), ("Page not found", None)],
+    """        <div class="legal">
+<p>Sorry, we couldn’t find the page you were looking for. It may have moved while we change our name from Fort to Twenty4.</p>
+<p><a href="/">Go to the home page</a>, see <a href="/policies/">our policies</a> or contact us at <a href="mailto:hello@twenty4.group">hello@twenty4.group</a>.</p>
+</div>""",
+    "Sorry, we couldn't find that page. Return to the Twenty4 home page or contact our team.",
+))
+
+# Sitemap: every indexable page (the 404 and the PDF are left out)
+paths = ["", "policies/"] + [f"policies/{s}/" for s, _, _, _ in POLICIES] + ["cookies/"]
+urls = "".join(f"  <url><loc>{SITE}{p}</loc></url>\n" for p in paths)
+write("sitemap.xml", f'''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls}</urlset>
+''')
